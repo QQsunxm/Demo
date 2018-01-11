@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:context="http://www.springframework.org/schema/context" 
+  xmlns:aop="http://www.springframework.org/schema/aop"
+  xmlns:tx="http://www.springframework.org/schema/tx"
+  xmlns:p="http://www.springframework.org/schema/p"
+  xsi:schemaLocation="
+        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd
+       	http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd">
+       	
+	<!--配置bean扫描 -->
+<!-- 	<context:component-scan base-package="cn.com.huawei.service.impl"/> -->
+	<!--引入jdbc.properties -->
+	<context:property-placeholder location="classpath:jdbc.properties"/>
+	
+	<!-- 配置连接池 -->
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
+		<property name="driverClassName" value="${jdbc.driver}" />
+		<property name="url" value="${jdbc.url}" />
+		<property name="username" value="${jdbc.username}" />
+		<property name="password" value="${jdbc.password}" />
+	</bean>
+	
+	<!-- 定义Mybatis的SqlSessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<!--指定数据源 -->
+		<property name="dataSource" ref="dataSource"/>
+		<!--指定mybatis配置文件 -->
+		<property name="configLocation" value="classpath:mybatisConfig.xml"/>
+		<!--扫描*Mapper.xml -->
+<!-- 		<property name="mapperLocations" value="classpath:mappers/*Mapper.xml"/> -->
+		<!-- mybatis中取别名 -->
+<!-- 		<property name="typeAliasesPackage" value="cn.com.huawei.pojo"/> -->
+	</bean>
+	
+	<!-- 配置Dao接口的扫描器 -->
+<!-- 	<bean class="org.mybatis.spring.mapper.MapperScannerConfigurer"> -->
+		<!--设置包名 -->
+<!-- 		<property name="basePackage" value="cn.com.huawei.dao" /> -->
+<!-- 	</bean> -->
+	
+	<!--事务管理器 -->
+	<bean id="transactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!--配置事务的通知-->
+	<tx:advice id="txAdvice" transaction-manager="transactionManager">
+		<tx:attributes>
+			<!-- name 方法名 这是连接点名  ☆☆☆☆
+				isolation 隔离级别
+				propagation 传播行为
+				read-only 是否只读，true只允许select
+				timeout 超时时间，-1 不超时，使用数据库内部默认超时时间 
+				rollback-for 配置一些异常类型，发生这些异常，事务就好回滚，不配置发生异常都回滚
+				no-rollback-for 配置一些异常类型，发生这些异常，事务不会回滚 
+			-->
+			<tx:method name="update*" isolation="DEFAULT" propagation="REQUIRED" read-only="false" />
+			<tx:method name="delete*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="insert*" isolation="DEFAULT" propagation="REQUIRED" read-only="false"/>
+			<tx:method name="select*" read-only="true"/>		
+		</tx:attributes>
+	</tx:advice>
+	
+	<!--配置切点切面 -->
+<!-- 	<aop:config> -->
+<!-- 		<aop:pointcut id="pointcut" expression="execution(* cn.com.huawei.service.*.*(..))"/> -->
+<!-- 		<aop:advisor advice-ref="txAdvice" pointcut-ref="pointcut"/> -->
+<!-- 	</aop:config> -->
+	
+</beans>
